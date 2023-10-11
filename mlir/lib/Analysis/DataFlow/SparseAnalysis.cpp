@@ -116,8 +116,25 @@ void AbstractSparseForwardDataFlowAnalysis::visitOperation(Operation *op) {
                                  resultLattices);
   }
 
-  // The results of a call operation are determined by the callgraph.
+  // Grab the lattice elements of the operands.
+  SmallVector<const AbstractSparseLattice *> operandLattices;
+  operandLattices.reserve(op->getNumOperands());
+  for (Value operand : op->getOperands()) {
+    AbstractSparseLattice *operandLattice = getLatticeElement(operand);
+    operandLattice->useDefSubscribe(this);
+    operandLattices.push_back(operandLattice);
+  }
+
   if (auto call = dyn_cast<CallOpInterface>(op)) {
+    // If the call operation is to an external function, attempt to infer the
+    // results from the call arguments.
+    auto callable =
+        dyn_cast_if_present<CallableOpInterface>(call.resolveCallable());
+    if (callable && !callable.getCallableRegion())
+      return visitExternalCallImpl(call, operandLattices, resultLattices);
+
+    // Otherwise, the results of a call operation are determined by the
+    // callgraph.
     const auto *predecessors = getOrCreateFor<PredecessorState>(op, call);
     // If not all return sites are known, then conservatively assume we can't
     // reason about the data-flow.
@@ -127,15 +144,6 @@ void AbstractSparseForwardDataFlowAnalysis::visitOperation(Operation *op) {
       for (auto it : llvm::zip(predecessor->getOperands(), resultLattices))
         join(std::get<1>(it), *getLatticeElementFor(op, std::get<0>(it)));
     return;
-  }
-
-  // Grab the lattice elements of the operands.
-  SmallVector<const AbstractSparseLattice *> operandLattices;
-  operandLattices.reserve(op->getNumOperands());
-  for (Value operand : op->getOperands()) {
-    AbstractSparseLattice *operandLattice = getLatticeElement(operand);
-    operandLattice->useDefSubscribe(this);
-    operandLattices.push_back(operandLattice);
   }
 
   // Invoke the operation transfer function.
