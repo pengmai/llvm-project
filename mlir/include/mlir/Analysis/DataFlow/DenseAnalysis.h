@@ -27,8 +27,9 @@ namespace dataflow {
 // CallControlFlowAction
 //===----------------------------------------------------------------------===//
 
-/// Indicates whether the control enters or exits the callee.
-enum class CallControlFlowAction { EnterCallee, ExitCallee };
+/// Indicates whether the control enters, exits, or skips over the callee (in
+/// the case of external functions).
+enum class CallControlFlowAction { EnterCallee, ExitCallee, ExternalCallee };
 
 //===----------------------------------------------------------------------===//
 // AbstractDenseLattice
@@ -155,7 +156,9 @@ private:
 
   /// Visit an operation for which the data flow is described by the
   /// `CallOpInterface`.
-  void visitCallOperation(CallOpInterface call, AbstractDenseLattice *after);
+  void visitCallOperation(CallOpInterface call,
+                          const AbstractDenseLattice &before,
+                          AbstractDenseLattice *after);
 };
 
 //===----------------------------------------------------------------------===//
