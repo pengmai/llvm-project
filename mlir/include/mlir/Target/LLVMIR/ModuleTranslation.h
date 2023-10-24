@@ -76,6 +76,10 @@ public:
   /// Stores the mapping between an MLIR value and its LLVM IR counterpart.
   void mapValue(Value mlir, llvm::Value *llvm) { mapValue(mlir) = llvm; }
 
+  void mapOperation(Operation *mlir, llvm::Instruction *llvm) {
+    instMapping.insert({mlir, llvm});
+  }
+
   /// Provides write-once access to store the LLVM IR value corresponding to the
   /// given MLIR value.
   llvm::Value *&mapValue(Value value) {
@@ -88,6 +92,12 @@ public:
   /// Finds an LLVM IR value corresponding to the given MLIR value.
   llvm::Value *lookupValue(Value value) const {
     return valueMapping.lookup(value);
+  }
+
+  /// Finds an LLVM IR instruction corresponding to the given MLIR operation if
+  /// one exists.
+  llvm::Instruction *lookupOperation(Operation *op) const {
+    return instMapping.lookup(op);
   }
 
   /// Looks up remapped a list of remapped values.
@@ -338,6 +348,7 @@ private:
   /// Mappings between original and translated values, used for lookups.
   llvm::StringMap<llvm::Function *> functionMapping;
   DenseMap<Value, llvm::Value *> valueMapping;
+  DenseMap<Operation *, llvm::Instruction *> instMapping;
   DenseMap<Block *, llvm::BasicBlock *> blockMapping;
 
   /// A mapping between MLIR LLVM dialect terminators and LLVM IR terminators
