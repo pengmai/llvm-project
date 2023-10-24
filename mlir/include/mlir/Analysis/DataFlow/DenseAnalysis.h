@@ -397,7 +397,9 @@ private:
   ///     otherwise,
   ///   - meet that state with the state before the call-like op, or use the
   ///     custom logic if overridden by concrete analyses.
-  void visitCallOperation(CallOpInterface call, AbstractDenseLattice *before);
+  void visitCallOperation(CallOpInterface call,
+                          const AbstractDenseLattice &after,
+                          AbstractDenseLattice *before);
 
   /// Symbol table for call-level control flow.
   SymbolTableCollection &symbolTable;

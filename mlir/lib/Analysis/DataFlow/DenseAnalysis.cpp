@@ -266,18 +266,19 @@ LogicalResult AbstractDenseBackwardDataFlowAnalysis::visit(ProgramPoint point) {
 }
 
 void AbstractDenseBackwardDataFlowAnalysis::visitCallOperation(
-    CallOpInterface call, AbstractDenseLattice *before) {
+    CallOpInterface call, const AbstractDenseLattice &after,
+    AbstractDenseLattice *before) {
   // Find the callee.
   Operation *callee = call.resolveCallable(&symbolTable);
   auto callable = dyn_cast_or_null<CallableOpInterface>(callee);
   if (!callable)
     return setToExitState(before);
 
-  // No region means the callee is only declared in this module and we shouldn't
-  // assume anything about it.
+  // No region means the callee is only declared in this module.
   Region *region = callable.getCallableRegion();
   if (!region || region->empty())
-    return setToExitState(before);
+    return visitCallControlFlowTransfer(
+        call, CallControlFlowAction::ExternalCallee, after, before);
 
   // Call-level control flow specifies the data flow here.
   //
@@ -322,7 +323,7 @@ void AbstractDenseBackwardDataFlowAnalysis::processOperation(Operation *op) {
   if (auto branch = dyn_cast<RegionBranchOpInterface>(op))
     return visitRegionBranchOperation(op, branch, std::nullopt, before);
   if (auto call = dyn_cast<CallOpInterface>(op))
-    return visitCallOperation(call, before);
+    return visitCallOperation(call, *after, before);
 
   // Invoke the operation transfer function.
   visitOperationImpl(op, *after, before);
