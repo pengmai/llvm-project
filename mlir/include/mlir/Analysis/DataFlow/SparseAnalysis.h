@@ -389,6 +389,10 @@ protected:
       Operation *op, ArrayRef<AbstractSparseLattice *> operandLattices,
       ArrayRef<const AbstractSparseLattice *> resultLattices) = 0;
 
+  virtual void visitExternalCallImpl(
+      CallOpInterface call, ArrayRef<AbstractSparseLattice *> operandLattices,
+      ArrayRef<const AbstractSparseLattice *> resultLattices) = 0;
+
   // Visit operands on branch instructions that are not forwarded.
   virtual void visitBranchOperand(OpOperand &operand) = 0;
 
@@ -470,6 +474,12 @@ public:
   virtual void visitOperation(Operation *op, ArrayRef<StateT *> operands,
                               ArrayRef<const StateT *> results) = 0;
 
+  virtual void visitExternalCall(CallOpInterface call,
+                                 ArrayRef<StateT *> operands,
+                                 ArrayRef<const StateT *> results) {
+    setAllToExitStates(operands);
+  };
+
 protected:
   /// Get the lattice element for a value.
   StateT *getLatticeElement(Value value) override {
@@ -495,6 +505,17 @@ private:
       ArrayRef<const AbstractSparseLattice *> resultLattices) override {
     visitOperation(
         op,
+        {reinterpret_cast<StateT *const *>(operandLattices.begin()),
+         operandLattices.size()},
+        {reinterpret_cast<const StateT *const *>(resultLattices.begin()),
+         resultLattices.size()});
+  }
+
+  void visitExternalCallImpl(
+      CallOpInterface call, ArrayRef<AbstractSparseLattice *> operandLattices,
+      ArrayRef<const AbstractSparseLattice *> resultLattices) override {
+    visitExternalCall(
+        call,
         {reinterpret_cast<StateT *const *>(operandLattices.begin()),
          operandLattices.size()},
         {reinterpret_cast<const StateT *const *>(resultLattices.begin()),

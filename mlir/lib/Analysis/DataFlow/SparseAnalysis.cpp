@@ -453,6 +453,8 @@ void AbstractSparseBackwardDataFlowAnalysis::visitOperation(Operation *op) {
                *getLatticeElementFor(op, blockArg));
           unaccounted.reset(argOpOperand.getOperandNumber());
         }
+      } else {
+        visitExternalCallImpl(call, operandLattices, resultLattices);
       }
       // Handle the operands of the call op that aren't forwarded to any
       // arguments.
