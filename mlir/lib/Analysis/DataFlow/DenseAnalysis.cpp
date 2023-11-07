@@ -56,17 +56,16 @@ LogicalResult AbstractDenseForwardDataFlowAnalysis::visit(ProgramPoint point) {
 void AbstractDenseForwardDataFlowAnalysis::visitCallOperation(
     CallOpInterface call, const AbstractDenseLattice &before,
     AbstractDenseLattice *after) {
-
-  const auto *predecessors =
-      getOrCreateFor<PredecessorState>(call.getOperation(), call);
-
   // Allow customization for special behaviour of calls to external functions.
   auto callable =
       dyn_cast_if_present<CallableOpInterface>(call.resolveCallable());
   if (callable && !callable.getCallableRegion())
-    visitCallControlFlowTransfer(call, CallControlFlowAction::ExternalCallee,
-                                 before, after);
-  else if (!predecessors->allPredecessorsKnown())
+    return visitCallControlFlowTransfer(
+        call, CallControlFlowAction::ExternalCallee, before, after);
+
+  const auto *predecessors =
+      getOrCreateFor<PredecessorState>(call.getOperation(), call);
+  if (!predecessors->allPredecessorsKnown())
     // Otherwise, if not all return sites are known, then conservatively assume
     // we can't reason about the data-flow.
     return setToEntryState(after);
