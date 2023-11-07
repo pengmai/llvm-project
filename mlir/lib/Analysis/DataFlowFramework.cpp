@@ -130,7 +130,9 @@ void DataFlowSolver::propagateIfChanged(AnalysisState *state,
 
 DataFlowAnalysis::~DataFlowAnalysis() = default;
 
-DataFlowAnalysis::DataFlowAnalysis(DataFlowSolver &solver) : solver(solver) {}
+DataFlowAnalysis::DataFlowAnalysis(DataFlowSolver &solver) : solver(solver) {
+  disableInterprocedural = solver.disableInterprocedural;
+}
 
 void DataFlowAnalysis::addDependency(AnalysisState *state, ProgramPoint point) {
   state->addDependency(point, this);

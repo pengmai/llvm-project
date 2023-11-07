@@ -195,6 +195,9 @@ class DataFlowAnalysis;
 /// TODO: Optimize the internal implementation of the solver.
 class DataFlowSolver {
 public:
+  DataFlowSolver(bool disableInterprocedural = false)
+      : disableInterprocedural(disableInterprocedural) {}
+
   /// Load an analysis into the solver. Return the analysis instance.
   template <typename AnalysisT, typename... Args>
   AnalysisT *load(Args &&...args);
@@ -235,6 +238,8 @@ public:
   /// Propagate an update to an analysis state if it changed by pushing
   /// dependent work items to the back of the queue.
   void propagateIfChanged(AnalysisState *state, ChangeResult changed);
+
+  bool disableInterprocedural;
 
 private:
   /// The solver's work queue. Work items can be inserted to the front of the
@@ -386,6 +391,10 @@ public:
   virtual LogicalResult visit(ProgramPoint point) = 0;
 
 protected:
+  /// A flag to disable interprocedural dataflow analysis, treating all function
+  /// calls as external.
+  bool disableInterprocedural = false;
+
   /// Create a dependency between the given analysis state and program point
   /// on this analysis.
   void addDependency(AnalysisState *state, ProgramPoint point);
