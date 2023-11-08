@@ -59,7 +59,7 @@ void AbstractDenseForwardDataFlowAnalysis::visitCallOperation(
   // Allow customization for special behaviour of calls to external functions.
   auto callable =
       dyn_cast_if_present<CallableOpInterface>(call.resolveCallable());
-  if (callable && !callable.getCallableRegion())
+  if (callable && (!callable.getCallableRegion() || disableInterprocedural))
     return visitCallControlFlowTransfer(
         call, CallControlFlowAction::ExternalCallee, before, after);
 
@@ -138,7 +138,7 @@ void AbstractDenseForwardDataFlowAnalysis::visitBlock(Block *block) {
       const auto *callsites = getOrCreateFor<PredecessorState>(block, callable);
       // If not all callsites are known, conservatively mark all lattices as
       // having reached their pessimistic fixpoints.
-      if (!callsites->allPredecessorsKnown())
+      if (!callsites->allPredecessorsKnown() || disableInterprocedural)
         return setToEntryState(after);
       for (Operation *callsite : callsites->getKnownPredecessors()) {
         // Get the dense lattice before the callsite.
@@ -284,7 +284,7 @@ void AbstractDenseBackwardDataFlowAnalysis::visitCallOperation(
 
   // No region means the callee is only declared in this module.
   Region *region = callable.getCallableRegion();
-  if (!region || region->empty())
+  if (!region || region->empty() || disableInterprocedural)
     return visitCallControlFlowTransfer(
         call, CallControlFlowAction::ExternalCallee, after, before);
 
@@ -367,7 +367,7 @@ void AbstractDenseBackwardDataFlowAnalysis::visitBlock(Block *block) {
       const auto *callsites = getOrCreateFor<PredecessorState>(block, callable);
       // If not all call sites are known, conservative mark all lattices as
       // having reached their pessimistic fix points.
-      if (!callsites->allPredecessorsKnown())
+      if (!callsites->allPredecessorsKnown() || disableInterprocedural)
         return setToExitState(before);
 
       for (Operation *callsite : callsites->getKnownPredecessors()) {

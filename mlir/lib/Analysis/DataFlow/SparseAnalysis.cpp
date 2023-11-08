@@ -130,7 +130,7 @@ void AbstractSparseForwardDataFlowAnalysis::visitOperation(Operation *op) {
     // results from the call arguments.
     auto callable =
         dyn_cast_if_present<CallableOpInterface>(call.resolveCallable());
-    if (callable && !callable.getCallableRegion())
+    if (callable && (!callable.getCallableRegion() || disableInterprocedural))
       return visitExternalCallImpl(call, operandLattices, resultLattices);
 
     // Otherwise, the results of a call operation are determined by the
@@ -176,7 +176,7 @@ void AbstractSparseForwardDataFlowAnalysis::visitBlock(Block *block) {
       const auto *callsites = getOrCreateFor<PredecessorState>(block, callable);
       // If not all callsites are known, conservatively mark all lattices as
       // having reached their pessimistic fixpoints.
-      if (!callsites->allPredecessorsKnown())
+      if (!callsites->allPredecessorsKnown() || disableInterprocedural)
         return setAllToEntryStates(argLattices);
       for (Operation *callsite : callsites->getKnownPredecessors()) {
         auto call = cast<CallOpInterface>(callsite);
@@ -445,7 +445,7 @@ void AbstractSparseBackwardDataFlowAnalysis::visitOperation(Operation *op) {
       MutableArrayRef<OpOperand> argOpOperands =
           operandsToOpOperands(argOperands);
       Region *region = callable.getCallableRegion();
-      if (region && !region->empty()) {
+      if (region && !region->empty() && !disableInterprocedural) {
         Block &block = region->front();
         for (auto [blockArg, argOpOperand] :
              llvm::zip(block.getArguments(), argOpOperands)) {
