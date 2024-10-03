@@ -109,6 +109,14 @@ define void @cos_test(float %0, <8 x float> %1) {
   %4 = call <8 x float> @llvm.cos.v8f32(<8 x float> %1)
   ret void
 }
+; CHECK-LABEL:  llvm.func @tanh_test
+define void @tanh_test(float %0, <8 x float> %1) {
+  ; CHECK: llvm.intr.tanh(%{{.*}}) : (f32) -> f32
+  %3 = call float @llvm.tanh.f32(float %0)
+  ; CHECK: llvm.intr.tanh(%{{.*}}) : (vector<8xf32>) -> vector<8xf32>
+  %4 = call <8 x float> @llvm.tanh.v8f32(<8 x float> %1)
+  ret void
+}
 
 ; CHECK-LABEL:  llvm.func @copysign_test
 define void @copysign_test(float %0, float %1, <8 x float> %2, <8 x float> %3) {
@@ -959,6 +967,8 @@ declare float @llvm.floor.f32(float)
 declare <8 x float> @llvm.floor.v8f32(<8 x float>)
 declare float @llvm.cos.f32(float)
 declare <8 x float> @llvm.cos.v8f32(<8 x float>)
+declare float @llvm.tanh.f32(float)
+declare <8 x float> @llvm.tanh.v8f32(<8 x float>)
 declare float @llvm.copysign.f32(float, float)
 declare <8 x float> @llvm.copysign.v8f32(<8 x float>, <8 x float>)
 declare float @llvm.pow.f32(float, float)
