@@ -194,10 +194,125 @@ def NVVM_Clock64Op : NVVM_SpecialRegisterOp<"read.ptx.sreg.clock64">;
 // NVVM approximate op definitions
 //===----------------------------------------------------------------------===//
 
+def NVVM_Lg2ApproxFtzF32Op : NVVM_IntrOp<"lg2.approx.ftz.f", [Pure], 1> {
+  let arguments = (ins F32:$arg);
+  let results = (outs F32:$res);
+  let assemblyFormat = "$arg attr-dict `:` type($res)";
+}
+
+def NVVM_Ex2ApproxFtzF32Op : NVVM_IntrOp<"ex2.approx.ftz.f", [Pure], 1> {
+  let arguments = (ins F32:$arg);
+  let results = (outs F32:$res);
+  let assemblyFormat = "$arg attr-dict `:` type($res)";
+}
+
 def NVVM_RcpApproxFtzF32Op : NVVM_IntrOp<"rcp.approx.ftz.f", [Pure], 1> {
   let arguments = (ins F32:$arg);
   let results = (outs F32:$res);
   let assemblyFormat = "$arg attr-dict `:` type($res)";
+}
+
+def NVVM_RcpApproxFtzF64Op : NVVM_IntrOp<"rcp.approx.ftz.d", [Pure], 1> {
+  let arguments = (ins F64:$arg);
+  let results = (outs F64:$res);
+  let assemblyFormat = "$arg attr-dict `:` type($res)";
+}
+
+//===----------------------------------------------------------------------===//
+// NVVM math op definitions
+//===----------------------------------------------------------------------===//
+
+// FIXME: this is duplicated with the barrier0 op above
+def NVVM_Barrier0Op : NVVM_IntrOp<"barrier0", [], 0> {
+  let assemblyFormat = "attr-dict";
+}
+
+def NVVM_MemBarCtaOp : NVVM_IntrOp<"membar.cta", [], 0> {
+  let assemblyFormat = "attr-dict";
+}
+
+def NVVM_Barrier0AndOp : NVVM_IntrOp<"barrier0.and", [], 1> {
+  let arguments = (ins I32:$arg);
+  let results = (outs I32:$res);
+  let assemblyFormat = "$arg attr-dict `:` type($res)";
+}
+
+def NVVM_Barrier0OrOp : NVVM_IntrOp<"barrier0.or", [], 1> {
+  let arguments = (ins I32:$arg);
+  let results = (outs I32:$res);
+  let assemblyFormat = "$arg attr-dict `:` type($res)";
+}
+
+def NVVM_ShflSyncIdxI32Op : NVVM_IntrOp<"shfl.sync.idx.i32", [], 1> {
+  let arguments = (ins I32:$a, I32:$b, I32:$c, I32:$d);
+  let results = (outs I32:$res);
+  let assemblyFormat = "$a `,` $b `,` $c `,` $d attr-dict `:` type($res)";
+}
+
+def NVVM_VoteAnySyncOp : NVVM_IntrOp<"vote.any.sync", [], 1> {
+  let arguments = (ins I32:$a, I1:$b);
+  let results = (outs I1:$res);
+  let assemblyFormat = "$a `,` $b attr-dict `:` type($res)";
+}
+
+def NVVM_VoteAllSyncOp : NVVM_IntrOp<"vote.all.sync", [], 1> {
+  let arguments = (ins I32:$a, I1:$b);
+  let results = (outs I1:$res);
+  let assemblyFormat = "$a `,` $b attr-dict `:` type($res)";
+}
+
+def NVVM_SqrtF64Op : NVVM_IntrOp<"sqrt.rn.d", [Pure], 1> {
+  let arguments = (ins F64:$arg);
+  let results = (outs F64:$res);
+  let assemblyFormat = "$arg attr-dict `:` type($res)";
+}
+
+def NVVM_FabsF64Op : NVVM_IntrOp<"fabs.d", [Pure], 1> {
+  let arguments = (ins F64:$arg);
+  let results = (outs F64:$res);
+  let assemblyFormat = "$arg attr-dict `:` type($res)";
+}
+
+def NVVM_FmaF64Op : NVVM_IntrOp<"fma.rn.d", [Pure], 1> {
+  let arguments = (ins F64:$a, F64:$b, F64:$c);
+  let results = (outs F64:$res);
+  let assemblyFormat = "$a `,` $b `,` $c attr-dict `:` type($res)";
+}
+
+def NVVM_MulF64Op : NVVM_IntrOp<"mul.rn.d", [Pure], 1> {
+  let arguments = (ins F64:$a, F64:$b);
+  let results = (outs F64:$res);
+  let assemblyFormat = "$a `,` $b attr-dict `:` type($res)";
+}
+
+def NVVM_D2iHiOp : NVVM_IntrOp<"d2i.hi", [Pure], 1> {
+  let arguments = (ins F64:$arg);
+  let results = (outs I32:$res);
+  let assemblyFormat = "$arg attr-dict `:` type($res)";
+}
+
+def NVVM_D2iLoOp : NVVM_IntrOp<"d2i.lo", [Pure], 1> {
+  let arguments = (ins F64:$arg);
+  let results = (outs I32:$res);
+  let assemblyFormat = "$arg attr-dict `:` type($res)";
+}
+
+def NVVM_F2iRnOp : NVVM_IntrOp<"f2i.rn", [Pure], 1> {
+  let arguments = (ins F32:$arg);
+  let results = (outs I32:$res);
+  let assemblyFormat = "$arg attr-dict `:` type($res)";
+}
+
+def NVVM_D2iRnOp : NVVM_IntrOp<"d2i.rn", [Pure], 1> {
+  let arguments = (ins F64:$arg);
+  let results = (outs I32:$res);
+  let assemblyFormat = "$arg attr-dict `:` type($res)";
+}
+
+def NVVM_LoHiI2dOp : NVVM_IntrOp<"lohi.i2d", [Pure], 1> {
+  let arguments = (ins I32:$a, I32:$b);
+  let results = (outs F64:$res);
+  let assemblyFormat = "$a `,` $b attr-dict `:` type($res)";
 }
 
 //===----------------------------------------------------------------------===//
@@ -399,12 +514,12 @@ def NVVM_MBarrierTestWaitSharedOp : NVVM_Op<"mbarrier.test.wait.shared">,
 // NVVM synchronization op definitions
 //===----------------------------------------------------------------------===//
 
-def NVVM_Barrier0Op : NVVM_Op<"barrier0"> {
-  string llvmBuilder = [{
-      createIntrinsicCall(builder, llvm::Intrinsic::nvvm_barrier0);
-  }];
-  let assemblyFormat = "attr-dict";
-}
+// def NVVM_Barrier0Op : NVVM_Op<"barrier0"> {
+//   string llvmBuilder = [{
+//       createIntrinsicCall(builder, llvm::Intrinsic::nvvm_barrier0);
+//   }];
+//   let assemblyFormat = "attr-dict";
+// }
 
 def NVVM_BarrierOp : NVVM_Op<"barrier", [AttrSizedOperandSegments]> {
   let arguments = (ins     
@@ -744,8 +859,7 @@ def NVVM_ShflOp :
 }
 
 def NVVM_VoteBallotOp :
-  NVVM_Op<"vote.ballot.sync">,
-  Results<(outs LLVM_Type:$res)>,
+  NVVM_IntrOp<"vote.ballot.sync", [], 1>,
   Arguments<(ins LLVM_Type:$mask, LLVM_Type:$pred)> {
   string llvmBuilder = [{
       $res = createIntrinsicCall(builder,
@@ -755,11 +869,8 @@ def NVVM_VoteBallotOp :
 }
 
 def NVVM_SyncWarpOp :
-  NVVM_Op<"bar.warp.sync">,
+  NVVM_IntrOp<"bar.warp.sync", [], 0>,
   Arguments<(ins LLVM_Type:$mask)> {
-  string llvmBuilder = [{
-      createIntrinsicCall(builder, llvm::Intrinsic::nvvm_bar_warp_sync, {$mask});
-  }];
   let assemblyFormat = "$mask attr-dict `:` type($mask)";
 }
 
