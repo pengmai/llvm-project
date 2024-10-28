@@ -1527,6 +1527,22 @@ LogicalResult ModuleImport::convertInstruction(llvm::Instruction *inst) {
   if (inst->getOpcode() == llvm::Instruction::Call) {
     auto *callInst = cast<llvm::CallInst>(inst);
 
+    if (callInst->isInlineAsm()) {
+      auto *inlineAsm = cast<llvm::InlineAsm>(callInst->getCalledOperand());
+      SmallVector<llvm::Value *> args(callInst->args());
+      FailureOr<SmallVector<Value>> arguments = convertValues(args);
+      if (failed(arguments))
+        return failure();
+
+      // TODO: do we need asm dialect or operand attrs?
+      auto inlineAsmOp = builder.create<InlineAsmOp>(
+          loc, convertType(callInst->getType()), *arguments,
+          inlineAsm->getAsmString(), inlineAsm->getConstraintString(),
+          inlineAsm->hasSideEffects(), inlineAsm->isAlignStack(),
+          AsmDialectAttr(), /*operand_attrs=*/ArrayAttr());
+      mapValue(inst, inlineAsmOp.getRes());
+      return success();
+    }
     SmallVector<Type> types;
     SmallVector<Value> operands;
     if (failed(convertCallTypeAndOperands(callInst, types, operands)))
