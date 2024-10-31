@@ -1335,7 +1335,7 @@ void GCNPassConfig::addMachineSSAOptimization() {
 
 bool GCNPassConfig::addILPOpts() {
   if (EnableEarlyIfConversion)
-    addPass(&EarlyIfConverterID);
+    addPass(&EarlyIfConverterLegacyID);
 
   TargetPassConfig::addILPOpts();
   return false;
@@ -1719,14 +1719,10 @@ bool GCNTargetMachine::parseMachineFunctionInfo(
   }
 
   for (const auto &[_, Info] : PFS.VRegInfosNamed) {
-    for (uint8_t Flag : Info->Flags) {
-      MFI->setFlag(Info->VReg, Flag);
-    }
+    MFI->setFlag(Info->VReg, Info->Flags);
   }
   for (const auto &[_, Info] : PFS.VRegInfos) {
-    for (uint8_t Flag : Info->Flags) {
-      MFI->setFlag(Info->VReg, Flag);
-    }
+    MFI->setFlag(Info->VReg, Info->Flags);
   }
 
   auto parseAndCheckArgument = [&](const std::optional<yaml::SIArgument> &A,
@@ -1992,6 +1988,13 @@ void AMDGPUCodeGenPassBuilder::addPreISel(AddIRPass &addPass) const {
   // FIXME: Why isn't this queried as required from AMDGPUISelDAGToDAG, and why
   // isn't this in addInstSelector?
   addPass(RequireAnalysisPass<UniformityInfoAnalysis, Function>());
+}
+
+void AMDGPUCodeGenPassBuilder::addILPOpts(AddMachinePass &addPass) const {
+  if (EnableEarlyIfConversion)
+    addPass(EarlyIfConverterPass());
+
+  Base::addILPOpts(addPass);
 }
 
 void AMDGPUCodeGenPassBuilder::addAsmPrinter(AddMachinePass &addPass,
