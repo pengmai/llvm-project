@@ -257,6 +257,7 @@ Attribute ConstantRangeAttr::parse(AsmParser &parser, Type odsType) {
     lower = lower.sextOrTrunc(bitWidth);
   if (upper.isZero())
     upper = upper.sextOrTrunc(bitWidth);
+  upper = upper.sextOrTrunc(bitWidth);
   return parser.getChecked<ConstantRangeAttr>(loc, parser.getContext(), lower,
                                               upper);
 }
