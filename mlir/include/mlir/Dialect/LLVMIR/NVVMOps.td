@@ -214,6 +214,12 @@ foreach index = !range(0, 32) in {
 // NVVM approximate op definitions
 //===----------------------------------------------------------------------===//
 
+def NVVM_Lg2ApproxF32Op : NVVM_IntrOp<"lg2.approx.f", [Pure], 1> {
+  let arguments = (ins F32:$arg);
+  let results = (outs F32:$res);
+  let assemblyFormat = "$arg attr-dict `:` type($res)";
+}
+
 def NVVM_Lg2ApproxFtzF32Op : NVVM_IntrOp<"lg2.approx.ftz.f", [Pure], 1> {
   let arguments = (ins F32:$arg);
   let results = (outs F32:$res);
@@ -221,6 +227,12 @@ def NVVM_Lg2ApproxFtzF32Op : NVVM_IntrOp<"lg2.approx.ftz.f", [Pure], 1> {
 }
 
 def NVVM_Ex2ApproxFtzF32Op : NVVM_IntrOp<"ex2.approx.ftz.f", [Pure], 1> {
+  let arguments = (ins F32:$arg);
+  let results = (outs F32:$res);
+  let assemblyFormat = "$arg attr-dict `:` type($res)";
+}
+
+def NVVM_Ex2ApproxF32Op : NVVM_IntrOp<"ex2.approx.f", [Pure], 1> {
   let arguments = (ins F32:$arg);
   let results = (outs F32:$res);
   let assemblyFormat = "$arg attr-dict `:` type($res)";
@@ -287,10 +299,82 @@ def NVVM_SqrtF64Op : NVVM_IntrOp<"sqrt.rn.d", [Pure], 1> {
   let assemblyFormat = "$arg attr-dict `:` type($res)";
 }
 
+def NVVM_f2LLOp : NVVM_IntrOp<"f2ll.rn", [Pure], 1> {
+  let arguments = (ins F32:$arg);
+  let results = (outs I64:$res);
+  let assemblyFormat = "$arg attr-dict `:` type($res)";
+}
+
+def NVVM_D2LLOp : NVVM_IntrOp<"d2ll.rn", [Pure], 1> {
+  let arguments = (ins F64:$arg);
+  let results = (outs I64:$res);
+  let assemblyFormat = "$arg attr-dict `:` type($res)";
+}
+
+def NVVM_RSqrtApproxFtzF32Op : NVVM_IntrOp<"rsqrt.approx.ftz.f", [Pure], 1> {
+  let arguments = (ins F32:$arg);
+  let results = (outs F32:$res);
+  let assemblyFormat = "$arg attr-dict `:` type($res)";
+}
+
+def NVVM_RSqrtApproxFtzF64Op : NVVM_IntrOp<"rsqrt.approx.ftz.d", [Pure], 1> {
+  let arguments = (ins F64:$arg);
+  let results = (outs F64:$res);
+  let assemblyFormat = "$arg attr-dict `:` type($res)";
+}
+
+def NVVM_SqrtApproxF32Op : NVVM_IntrOp<"sqrt.approx.f", [Pure], 1> {
+  let arguments = (ins F32:$arg);
+  let results = (outs F32:$res);
+  let assemblyFormat = "$arg attr-dict `:` type($res)";
+}
+
+def NVVM_RSqrtApproxF32Op : NVVM_IntrOp<"rsqrt.approx.f", [Pure], 1> {
+  let arguments = (ins F32:$arg);
+  let results = (outs F32:$res);
+  let assemblyFormat = "$arg attr-dict `:` type($res)";
+}
+
+def NVVM_RSqrtApproxF64Op : NVVM_IntrOp<"rsqrt.approx.d", [Pure], 1> {
+  let arguments = (ins F64:$arg);
+  let results = (outs F64:$res);
+  let assemblyFormat = "$arg attr-dict `:` type($res)";
+}
+
+def NVVM_RoundF32Op : NVVM_IntrOp<"round.f", [Pure], 1> {
+  let arguments = (ins F32:$arg);
+  let results = (outs F32:$res);
+  let assemblyFormat = "$arg attr-dict `:` type($res)";
+}
+
+def NVVM_RoundF64Op : NVVM_IntrOp<"round.d", [Pure], 1> {
+  let arguments = (ins F64:$arg);
+  let results = (outs F64:$res);
+  let assemblyFormat = "$arg attr-dict `:` type($res)";
+}
+
+def NVVM_FabsF32Op : NVVM_IntrOp<"fabs.f", [Pure], 1> {
+  let arguments = (ins F32:$arg);
+  let results = (outs F32:$res);
+  let assemblyFormat = "$arg attr-dict `:` type($res)";
+}
+
 def NVVM_FabsF64Op : NVVM_IntrOp<"fabs.d", [Pure], 1> {
   let arguments = (ins F64:$arg);
   let results = (outs F64:$res);
   let assemblyFormat = "$arg attr-dict `:` type($res)";
+}
+
+def NVVM_FmaF32Op : NVVM_IntrOp<"fma.rm.f", [Pure], 1> {
+  let arguments = (ins F32:$a, F32:$b, F32:$c);
+  let results = (outs F32:$res);
+  let assemblyFormat = "$a `,` $b `,` $c attr-dict `:` type($res)";
+}
+
+def NVVM_FmaRzF32Op : NVVM_IntrOp<"fma.rz.f", [Pure], 1> {
+  let arguments = (ins F32:$a, F32:$b, F32:$c);
+  let results = (outs F32:$res);
+  let assemblyFormat = "$a `,` $b `,` $c attr-dict `:` type($res)";
 }
 
 def NVVM_FmaF64Op : NVVM_IntrOp<"fma.rn.d", [Pure], 1> {
@@ -299,10 +383,58 @@ def NVVM_FmaF64Op : NVVM_IntrOp<"fma.rn.d", [Pure], 1> {
   let assemblyFormat = "$a `,` $b `,` $c attr-dict `:` type($res)";
 }
 
+def NVVM_AddF32Op : NVVM_IntrOp<"add.rn.f", [Pure], 1> {
+  let arguments = (ins F32:$a, F32:$b);
+  let results = (outs F32:$res);
+  let assemblyFormat = "$a `,` $b attr-dict `:` type($res)";
+}
+
+def NVVM_AddF64Op : NVVM_IntrOp<"add.rn.d", [Pure], 1> {
+  let arguments = (ins F64:$a, F64:$b);
+  let results = (outs F64:$res);
+  let assemblyFormat = "$a `,` $b attr-dict `:` type($res)";
+}
+
+def NVVM_AddRzF32Op : NVVM_IntrOp<"add.rz.f", [Pure], 1> {
+  let arguments = (ins F32:$a, F32:$b);
+  let results = (outs F32:$res);
+  let assemblyFormat = "$a `,` $b attr-dict `:` type($res)";
+}
+
+def NVVM_AddRzF64Op : NVVM_IntrOp<"add.rz.d", [Pure], 1> {
+  let arguments = (ins F64:$a, F64:$b);
+  let results = (outs F64:$res);
+  let assemblyFormat = "$a `,` $b attr-dict `:` type($res)";
+}
+
+def NVVM_MulF32Op : NVVM_IntrOp<"mul.rn.f", [Pure], 1> {
+  let arguments = (ins F32:$a, F32:$b);
+  let results = (outs F32:$res);
+  let assemblyFormat = "$a `,` $b attr-dict `:` type($res)";
+}
+
+def NVVM_MulRzF32Op : NVVM_IntrOp<"mul.rz.f", [Pure], 1> {
+  let arguments = (ins F32:$a, F32:$b);
+  let results = (outs F32:$res);
+  let assemblyFormat = "$a `,` $b attr-dict `:` type($res)";
+}
+
 def NVVM_MulF64Op : NVVM_IntrOp<"mul.rn.d", [Pure], 1> {
   let arguments = (ins F64:$a, F64:$b);
   let results = (outs F64:$res);
   let assemblyFormat = "$a `,` $b attr-dict `:` type($res)";
+}
+
+def NVVM_DivApproxF32Op : NVVM_IntrOp<"div.approx.f", [Pure], 1> {
+  let arguments = (ins F32:$a, F32:$b);
+  let results = (outs F32:$res);
+  let assemblyFormat = "$a `,` $b attr-dict `:` type($res)";
+}
+
+def NVVM_SaturateF32Op : NVVM_IntrOp<"saturate.f", [Pure], 1> {
+  let arguments = (ins F32:$arg);
+  let results = (outs F32:$res);
+  let assemblyFormat = "$arg attr-dict `:` type($res)";
 }
 
 def NVVM_D2iHiOp : NVVM_IntrOp<"d2i.hi", [Pure], 1> {
