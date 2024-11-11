@@ -2091,6 +2091,38 @@ LogicalResult ModuleImport::processFunction(llvm::Function *func) {
   // Handle Function attributes.
   processFunctionAttributes(func, funcOp);
 
+  // Handle (selected) NVVM annotations
+  if (llvm::NamedMDNode *nvvmAnnotations =
+          llvmModule->getNamedMetadata("nvvm.annotations")) {
+    for (llvm::MDNode *annotation : nvvmAnnotations->operands()) {
+      if (annotation->getNumOperands() != 3)
+        continue;
+
+      auto *funcPtr = cast<llvm::ConstantAsMetadata>(annotation->getOperand(0));
+      if (funcPtr->getValue() != func)
+        continue;
+
+      if (annotation->getOperand(1).equalsStr("kernel"))
+        funcOp->setAttr("nvvm.kernel", UnitAttr::get(context));
+      else if (annotation->getOperand(1).equalsStr("maxntidx")) {
+        auto &maxntidx =
+            cast<llvm::ConstantAsMetadata>(annotation->getOperand(2))
+                ->getValue()
+                ->getUniqueInteger();
+        SmallVector<int> array{(int)maxntidx.getSExtValue()};
+        funcOp->setAttr("nvvm.maxntid", DenseI32ArrayAttr::get(context, array));
+      } else if (annotation->getOperand(1).equalsStr("minctasm")) {
+        auto &minctasm =
+            cast<llvm::ConstantAsMetadata>(annotation->getOperand(2))
+                ->getValue()
+                ->getUniqueInteger();
+        funcOp->setAttr(
+            "nvvm.minctasm",
+            IntegerAttr::get(IntegerType::get(context, 32), minctasm));
+      }
+    }
+  }
+
   // Convert non-debug metadata by using the dialect interface.
   SmallVector<std::pair<unsigned, llvm::MDNode *>> allMetadata;
   func->getAllMetadata(allMetadata);
